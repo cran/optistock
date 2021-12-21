@@ -1,0 +1,47 @@
+---
+title: "Optimizing Costs of Fish Stocking"
+author: "Paul Frater"
+date: "7/13/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(optistock)
+```
+
+## Introduction
+
+Initial propagation efforts by the Wisconsin DNR focused on stocking many small
+fish into waterbodies throughout the state. As time has gone by trends have 
+shifted from stocking many, small fish to a strategy that inputs fewer, but 
+larger fish into systems presumably with the intent that larger fish are less 
+susceptible to natural mortality resulting in more fish recruiting to a size
+of the minimum legal limit. This is a good strategy, but, as is shown in this
+model, may not be the most cost effective.
+
+This model uses knowledge about a fish species or population's growth and 
+mortality to determine how many fish should be stocked to achieve a certain 
+number of fish that are recruited into the fishery. From this the costs of 
+stocking (and changes thereof across time) can be used to determine the most 
+cost effective time to stock a particular species of fish into a waterbody.
+
+## Determining Time to Recruitment into the Fishery
+
+With knowledge about a fishes growth, one can determine the time that it takes 
+for fish to grow to the minimum legal length (MLL). A basic inversion of the 
+von Bertalanffy growth function (VBGF) will predict the time that it takes 
+for a fish to reach MLL. Since daily values for hatchery costs will be used in 
+this model the time to MLL will be given in days. A straightforward and 
+relatively close approximation can be achieved by leaving all VBGF parameters
+the same and dividing the *k* parameter by 365. 
+
+## Using natural mortality to gauge stocking number to achieve desired recruits
+
+The number of fish at a future time interval can be determined by the number of
+fish at the present time multiplied by the exponent of a natural mortality 
+parameter (i.e. N[t]
+
+
+
+
