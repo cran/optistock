@@ -1,0 +1,10 @@
+name: optistock_app
+title:
+username: halk
+account: halk
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9665800
+bundleId: 7602131
+url: https://halk.shinyapps.io/optistock_app/
+version: 1

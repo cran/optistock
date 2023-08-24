@@ -33,12 +33,12 @@
 #' hatchery fish as time goes on. Increasing the exponent dramatically
 #' increases the cost of raising a greater number of fish. Integrating this
 #' equation across time will compute the total cost to raise the number of
-#' \code{recruits} to time T. Use the \code{\link{total_cost}} function to
+#' \code{recruits} to time T. Use the \code{\link{total_daily_cost}} function to
 #' do this automatically.
 #'
 #' @param time The time at which fish are raised in hatchery
 #' @param recruits The number of recruits raised
-#' @param init_cost Baseline initial cost to raise a single fish
+#' @param daily_cost Baseline daily cost to raise a single fish
 #' @param time_slope The slope term on the amount of time (see details)
 #' @param time_exp The exponent on the amount of time
 #' @param rec_slope The slope term on the number of recruits
@@ -52,21 +52,21 @@
 #'
 #' @examples
 #' # compute the instantaneous cost of raising 1000 fish on day 100
-#' cost_fun(time = 100, recruits = 1000, init_cost = 0.05,
+#' daily_cost_fun(time = 100, recruits = 1000, daily_cost = 0.05,
 #'          time_slope = 0, time_exp = 1,
 #'          rec_slope = 0.01, rec_exp = 1)
 #' # plot a curve of instantaneous cost against time
-#' curve(cost_fun(x, 1000, 0.05, 0.01, 1.2, 0.05, 1), 0, 1000,
+#' curve(daily_cost_fun(x, 1000, 0.05, 0.01, 1.2, 0.05, 1), 0, 1000,
 #'       xlab = "Time", ylab = "$")
 #' \dontrun{
 #' # 3d plot of costs by time and recruit
-#' emdbook::curve3d(cost_fun(x, y, 0.05, 0.01, 1.2, 0.05, 1),
+#' emdbook::curve3d(daily_cost_fun(x, y, 0.05, 0.01, 1.2, 0.05, 1),
 #'                  from = c(0, 0),
 #'                  to = c(1000, 1000),
 #'                  xlab = "Time", ylab = "Recruits",
 #'                  zlab = "$", sys3d = "wireframe")
 #' }
-cost_fun <- function(time, recruits, init_cost,
+daily_cost_fun <- function(time, recruits, daily_cost,
                      time_slope = 0, time_exp = 1,
                      rec_slope = 1, rec_exp = 1,
                      type = "multiplicative") {
@@ -74,61 +74,118 @@ cost_fun <- function(time, recruits, init_cost,
     cost <-
       (time_slope * (time)^time_exp) *
       (rec_slope * (recruits)^rec_exp) +
-      init_cost
+      daily_cost
   } else if (type == "additive") {
     cost <-
       (time_slope * (time)^time_exp) +
       (rec_slope * (recruits)^rec_exp) +
-      init_cost
+      daily_cost
   } else {
     stop("type must be either 'additive' or 'multiplicative'")
   }
   return(cost)
 }
 
-#' Compute the total cost of raising a certain number of fish until a give time
+#' Compute the total daily cost of raising hatchery fish
 #'
 #' This function takes the definite integral from time t = 0 until the
-#' given \code{time} of the \code{\link{cost_fun}}.
+#' given \code{time} of the \code{\link{daily_cost_fun}}.
 #' This integral is then the total cost of raising x number of fish until
 #' \code{time} given the other cost function parameters.
 #'
-#' @inheritParams cost_fun
+#' @inheritParams daily_cost_fun
+#' @param init_cost An intercept on the total cost function
 #'
 #' @return The total cost across time to raise the number of \code{recruits}.
 #' This is simply the integral from time t = 0 until \code{time} of the
-#' \code{\link{cost_fun}} function.
+#' \code{\link{daily_cost_fun}} function.
 #' @export
 #'
 #' @examples
 #' # total cost of raising 1000 fish for 100 days at given parameters
-#' total_cost(time = 100, recruits = 100,
-#'            init_cost = 0.05,
+#' total_daily_cost(time = 100, recruits = 100,
+#'            daily_cost = 0.05,
 #'            time_slope = 0.01, time_exp = 1.2,
 #'            rec_slope = 0.05, rec_exp = 1)
-total_cost <- function(time, recruits, init_cost,
-                       time_slope, time_exp,
-                       rec_slope, rec_exp, type = "multiplicative") {
+total_daily_cost <- function(time, recruits,
+                       daily_cost, init_cost = 0,
+                       time_slope = 0, time_exp = 1,
+                       rec_slope = 1, rec_exp = 1, type = "multiplicative") {
   out <- lapply(1:length(time), function(x) {
     if (length(recruits) > 1) {
       if (length(time) != length(recruits)) {
         stop("Recruits must either be length 1 or the same length as time")
       }
-      return(integrate(cost_fun, lower = 1e-10, upper = time[x],
-                       recruits = recruits[x], init_cost = init_cost,
-                       time_slope = time_slope, time_exp = time_exp,
-                       rec_slope = rec_slope, rec_exp = rec_exp,
-                       type = type)$value)
+      cost_integral <- integrate(
+        daily_cost_fun, lower = 1e-10, upper = time[x],
+        recruits = recruits[x], daily_cost = daily_cost,
+        time_slope = time_slope, time_exp = time_exp,
+        rec_slope = rec_slope, rec_exp = rec_exp,
+        type = type
+      )
+      out <- cost_integral$value + init_cost
+      return(out)
 
     } else {
-      return(integrate(cost_fun, lower = 1e-10, upper = time[x],
-                       recruits = recruits, init_cost = init_cost,
-                       time_slope = time_slope, time_exp = time_exp,
-                       rec_slope = rec_slope, rec_exp = rec_exp,
-                       type = type)$value)
+      cost_integral <- integrate(
+        daily_cost_fun, lower = 1e-10, upper = time[x],
+        recruits = recruits, daily_cost = daily_cost,
+        time_slope = time_slope, time_exp = time_exp,
+        rec_slope = rec_slope, rec_exp = rec_exp,
+        type = type
+      )
+      out <- cost_integral$value + init_cost
+      return(out)
     }
   })
   return(unlist(out))
+}
+
+#' Compute direct total cost to raise hatchery fish
+#'
+#' This function computes the total cost to raise fish in a hatchery until
+#' \code{time}. This function differs from \code{\link{total_daily_cost}} by
+#' directly computing the total cost rather than integrating a daily cost
+#' estimate.
+#'
+#' The \code{total_cost} function computes a cost curve according to the
+#' following equation:
+#'
+#' \ifelse{html}{
+#'  \out{<i>C = s<sub>T</sub>t<sup>&alpha;</sup>
+#'       * s<sub>2</sub>R<sup>&beta;</sup> + b</i>}}{
+#'  \deqn{C = \alpha * T ^ \gamma + \beta + R^\tau}
+#' }
+#'
+#' where \ifelse{html}{\out{&alpha;}}{\eqn{\alpha}} corresponds to the
+#' \code{time_slope} argument,
+#' \ifelse{html}{\out{&gamma;}}{\eqn{\gamma}} is the \code{time_exp} parameter,
+#' \ifelse{html}{\out{&beta;}}{\eqn{\beta}} is the intercept (or
+#' \code{init_cost}),
+#' R is the number of recruits, and
+#' \ifelse{html}{\out{&tau;}}{\eqn{\tau}} is the recruitment exponent
+#' corresponding to \code{rec_exp}
+#'
+#'
+#'
+#' @param time The amount of time that fish are raised in hatchery
+#' @param time_slope Controls how quickly the slope increases over time
+#' @param time_exp Controls the non-linearity of the curve over time
+#' @param init_cost The initial cost (i.e. intercept of the curve)
+#' @param recruits The number of recruits
+#' @param rec_exp Controls the non-linearity of the curve across recruit number
+#'
+#' @return A vector of values representing cost for the given time, recruit
+#' number, and associated variables
+#' @export
+#'
+#' @examples
+#' curve(total_cost(x, time_slope = 0.05, time_exp = 1.2), 0, 100)
+#' curve(total_cost(x, time_slope = 0.05, time_exp = 0.5), 0, 100)
+total_cost <- function(time, time_slope = 1, time_exp = 1, init_cost = 0,
+                       recruits = 1, rec_exp = 1) {
+  out <- ((time_slope * time^time_exp) + init_cost) * (recruits^rec_exp)
+  return(out)
 }
 
 #' Compute total cost as a linear function of time
@@ -176,22 +233,24 @@ linear_total_cost <- function(time, recruits, int, beta, rec_exp=1) {
 #' @export
 #'
 #' @examples
-#' cost_args <-
-#'   list(
+#' cost_args <- list(
 #'     init_cost = 0.05,
 #'     time_slope = 0.01, time_exp = 1.2,
-#'     rec_slope = 0.01, rec_exp = 1)
-#' mort_args <- list(m_init = (1 / 365), m_inf = (0.2 / 365), alpha = 0.0001)
+#'     rec_exp = 1
+#' )
+#' mort_args <- list(m_init = (1 / 365))
 #' # the cost-per-fish to stock across a range of times given cost and mortality
 #' # assumes fish recruit into the fishery at day 1000
-#' curve(cost_per_fish(x, 1000, 1000,
-#'                     cost_fun_args = cost_args,
-#'                     mort_fun_args = mort_args),
-#'       xlab = "Days", ylab = "$ per fish stocked",
-#'       10, 1200)
+#' curve(cost_per_fish(
+#'     x, 1000, 1000,
+#'     cost_fun_args = cost_args,
+#'     mort_fun_args = mort_args),
+#'   xlab = "Days", ylab = "$ per fish stocked",
+#'   10, 1200
+#' )
 cost_per_fish <- function(time_at_stocking, time_at_rec, n_recruits_desired,
                           cost_fun = total_cost, cost_fun_args,
-                          mort_fun = exp_mort, mort_fun_args) {
+                          mort_fun = constant_mort, mort_fun_args) {
   cost_per_recruit <- lapply(time_at_stocking, function(x) {
     n_fish_to_stock <- n_to_stock(time_at_stocking = x,
                                   time_at_rec = time_at_rec,

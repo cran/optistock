@@ -17,8 +17,7 @@
 #'   }
 #'   \item{source}{Where data was retrieved from. WDNR is the Wisconsin Dep't
 #'     of Natural Resources Fisheries Management Database.
-#'     FishBase (Froese and Pauly, 2010) is from the
-#'     \href{https://www.fishbase.de/}{FishBase website}.
+#'     FishBase (Froese and Pauly, 2010) is FishBase.
 #'   }
 #' }
 "growth_parameters"

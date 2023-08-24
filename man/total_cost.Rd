@@ -2,52 +2,60 @@
 % Please edit documentation in R/cost_funs.R
 \name{total_cost}
 \alias{total_cost}
-\title{Compute the total cost of raising a certain number of fish until a give time}
+\title{Compute direct total cost to raise hatchery fish}
 \usage{
 total_cost(
   time,
-  recruits,
-  init_cost,
-  time_slope,
-  time_exp,
-  rec_slope,
-  rec_exp,
-  type = "multiplicative"
+  time_slope = 1,
+  time_exp = 1,
+  init_cost = 0,
+  recruits = 1,
+  rec_exp = 1
 )
 }
 \arguments{
-\item{time}{The time at which fish are raised in hatchery}
+\item{time}{The amount of time that fish are raised in hatchery}
 
-\item{recruits}{The number of recruits raised}
+\item{time_slope}{Controls how quickly the slope increases over time}
 
-\item{init_cost}{Baseline initial cost to raise a single fish}
+\item{time_exp}{Controls the non-linearity of the curve over time}
 
-\item{time_slope}{The slope term on the amount of time (see details)}
+\item{init_cost}{The initial cost (i.e. intercept of the curve)}
 
-\item{time_exp}{The exponent on the amount of time}
+\item{recruits}{The number of recruits}
 
-\item{rec_slope}{The slope term on the number of recruits}
-
-\item{rec_exp}{The exponent on the number of recruits}
-
-\item{type}{Either multiply the number of recruits times the cost-at-time or
-add to it (see Details).}
+\item{rec_exp}{Controls the non-linearity of the curve across recruit number}
 }
 \value{
-The total cost across time to raise the number of \code{recruits}.
-This is simply the integral from time t = 0 until \code{time} of the
-\code{\link{cost_fun}} function.
+A vector of values representing cost for the given time, recruit
+number, and associated variables
 }
 \description{
-This function takes the definite integral from time t = 0 until the
-given \code{time} of the \code{\link{cost_fun}}.
-This integral is then the total cost of raising x number of fish until
-\code{time} given the other cost function parameters.
+This function computes the total cost to raise fish in a hatchery until
+\code{time}. This function differs from \code{\link{total_daily_cost}} by
+directly computing the total cost rather than integrating a daily cost
+estimate.
+}
+\details{
+The \code{total_cost} function computes a cost curve according to the
+following equation:
+
+\ifelse{html}{
+ \out{<i>C = s<sub>T</sub>t<sup>&alpha;</sup>
+      * s<sub>2</sub>R<sup>&beta;</sup> + b</i>}}{
+ \deqn{C = \alpha * T ^ \gamma + \beta + R^\tau}
+}
+
+where \ifelse{html}{\out{&alpha;}}{\eqn{\alpha}} corresponds to the
+\code{time_slope} argument,
+\ifelse{html}{\out{&gamma;}}{\eqn{\gamma}} is the \code{time_exp} parameter,
+\ifelse{html}{\out{&beta;}}{\eqn{\beta}} is the intercept (or
+\code{init_cost}),
+R is the number of recruits, and
+\ifelse{html}{\out{&tau;}}{\eqn{\tau}} is the recruitment exponent
+corresponding to \code{rec_exp}
 }
 \examples{
-# total cost of raising 1000 fish for 100 days at given parameters
-total_cost(time = 100, recruits = 100,
-           init_cost = 0.05,
-           time_slope = 0.01, time_exp = 1.2,
-           rec_slope = 0.05, rec_exp = 1)
+curve(total_cost(x, time_slope = 0.05, time_exp = 1.2), 0, 100)
+curve(total_cost(x, time_slope = 0.05, time_exp = 0.5), 0, 100)
 }

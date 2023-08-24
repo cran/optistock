@@ -76,14 +76,14 @@ curve(
   xlab = "Time (days)", ylab = "Cost ($)"
 )
 
-## ---- total_cost, fig.height = 4, fig.width = 7-------------------------------
+## ---- total_daily_cost, fig.height = 4, fig.width = 7-------------------------
 init_cost <- 0.01
 time_slope <- 0.01
 time_exp <- 1.05
 rec_slope <- 1
 rec_exp <- 1
 curve(
-  total_cost(x, recruits, init_cost, time_slope, time_exp, rec_slope, rec_exp),
+  total_daily_cost(x, recruits, init_cost, time_slope, time_exp, rec_slope, rec_exp),
   0, 1000,
   xlab = "Time (days)", ylab = "Cost ($)"
 )

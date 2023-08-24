@@ -11,7 +11,7 @@ cost_per_fish(
   n_recruits_desired,
   cost_fun = total_cost,
   cost_fun_args,
-  mort_fun = exp_mort,
+  mort_fun = constant_mort,
   mort_fun_args
 )
 }
@@ -43,17 +43,19 @@ Compute the per-cost fish based on stocking time, time to recruitment,
 growth, and mortality
 }
 \examples{
-cost_args <-
-  list(
+cost_args <- list(
     init_cost = 0.05,
     time_slope = 0.01, time_exp = 1.2,
-    rec_slope = 0.01, rec_exp = 1)
-mort_args <- list(m_init = (1 / 365), m_inf = (0.2 / 365), alpha = 0.0001)
+    rec_exp = 1
+)
+mort_args <- list(m_init = (1 / 365))
 # the cost-per-fish to stock across a range of times given cost and mortality
 # assumes fish recruit into the fishery at day 1000
-curve(cost_per_fish(x, 1000, 1000,
-                    cost_fun_args = cost_args,
-                    mort_fun_args = mort_args),
-      xlab = "Days", ylab = "$ per fish stocked",
-      10, 1200)
+curve(cost_per_fish(
+    x, 1000, 1000,
+    cost_fun_args = cost_args,
+    mort_fun_args = mort_args),
+  xlab = "Days", ylab = "$ per fish stocked",
+  10, 1200
+)
 }
